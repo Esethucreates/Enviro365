@@ -1,97 +1,127 @@
 package com.enviro.assessment.grad001.esethuzikhali.Enviro365.service;
 
-import com.enviro.assessment.grad001.esethuzikhali.Enviro365.dao.GuidelineDAO;
-import com.enviro.assessment.grad001.esethuzikhali.Enviro365.dao.TipsDAO;
-import com.enviro.assessment.grad001.esethuzikhali.Enviro365.dao.WasteCategoryDAO;
 import com.enviro.assessment.grad001.esethuzikhali.Enviro365.entity.DisposalGuidelines;
 import com.enviro.assessment.grad001.esethuzikhali.Enviro365.entity.RecyclingTips;
 import com.enviro.assessment.grad001.esethuzikhali.Enviro365.entity.WasteCategory;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.enviro.assessment.grad001.esethuzikhali.Enviro365.errorHandling.ResourceNotFoundException;
+import com.enviro.assessment.grad001.esethuzikhali.Enviro365.repositories.DisposalGuidelinesRepository;
+import com.enviro.assessment.grad001.esethuzikhali.Enviro365.repositories.RecyclingTipsRepository;
+import com.enviro.assessment.grad001.esethuzikhali.Enviro365.repositories.WasteCategoryRepository;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class ServiceLayerImpl implements ServiceInterface {
     // Fields for DAO
-    private WasteCategoryDAO wasteCategoryDAO;
-    private GuidelineDAO guidelineDAO;
-    private TipsDAO tipsDAO;
+    private final DisposalGuidelinesRepository disposalGuidelinesRepository;
+    private final RecyclingTipsRepository recyclingTipsRepository;
+    private final WasteCategoryRepository wasteCategoryRepository;
 
-    @Autowired
-    public ServiceLayerImpl(WasteCategoryDAO wasteCategoryDAO, GuidelineDAO guidelineDAO, TipsDAO tipsDAO) {
-        this.wasteCategoryDAO = wasteCategoryDAO;
-        this.guidelineDAO = guidelineDAO;
-        this.tipsDAO = tipsDAO;
+    public ServiceLayerImpl(DisposalGuidelinesRepository disposalGuidelinesRepository,
+                            RecyclingTipsRepository recyclingTipsRepository,
+                            WasteCategoryRepository wasteCategoryRepository) {
+        this.disposalGuidelinesRepository = disposalGuidelinesRepository;
+        this.recyclingTipsRepository = recyclingTipsRepository;
+        this.wasteCategoryRepository = wasteCategoryRepository;
     }
 
-    //    Waste Category
+
+    // WasteCategory Methods
     @Override
     public List<WasteCategory> getAllCategories() {
-        return wasteCategoryDAO.getAllCategories();
+        return wasteCategoryRepository.findAll();
     }
 
     @Override
     public WasteCategory getCategoryById(int id) {
-        return wasteCategoryDAO.getCategoryById(id);
+        return wasteCategoryRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Did not find category id - " + id));
     }
 
-    @Transactional
     @Override
     public WasteCategory saveCategory(WasteCategory wasteCategory) {
-        return wasteCategoryDAO.saveCategory(wasteCategory);
+        if (wasteCategory.getCategoryName() == null || wasteCategory.getCategoryName().trim().isEmpty()) {
+            throw new IllegalArgumentException("Category name cannot be empty.");
+        }
+        try {
+            return wasteCategoryRepository.save(wasteCategory);
+        } catch (DataIntegrityViolationException e) {
+            throw new DataIntegrityViolationException("Category name must be unique.");
+        }
     }
 
-    @Transactional
     @Override
     public void deleteCategory(int id) {
-        wasteCategoryDAO.deleteCategory(id);
+        if (!wasteCategoryRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Category with ID " + id + " does not exist.");
+        }
+        wasteCategoryRepository.deleteById(id);
     }
 
-    // Disposal Guidelines
+    // DisposalGuidelines Methods
     @Override
     public List<DisposalGuidelines> getAllGuidelines() {
-        return List.of();
+        return disposalGuidelinesRepository.findAll();
     }
 
     @Override
     public DisposalGuidelines getGuidelineById(int id) {
-        return null;
+        return disposalGuidelinesRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Did not find guideline id - " + id));
     }
 
-    @Transactional
     @Override
     public DisposalGuidelines saveGuideline(DisposalGuidelines disposalGuidelines) {
-        return null;
+        if (disposalGuidelines.getTitle() == null || disposalGuidelines.getTitle().trim().isEmpty()) {
+            throw new IllegalArgumentException("Guideline title cannot be empty.");
+        }
+        try {
+            return disposalGuidelinesRepository.save(disposalGuidelines);
+        } catch (DataIntegrityViolationException e) {
+            throw new DataIntegrityViolationException("Guideline title must be unique.");
+        }
     }
 
-    @Transactional
     @Override
     public void deleteGuideline(int id) {
-
+        if (!disposalGuidelinesRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Guideline with ID " + id + " does not exist.");
+        }
+        disposalGuidelinesRepository.deleteById(id);
     }
 
-    //    Recycling Tips
+    // RecyclingTips Methods
     @Override
     public List<RecyclingTips> getAllTips() {
-        return List.of();
+        return recyclingTipsRepository.findAll();
     }
 
     @Override
     public RecyclingTips getTipById(int id) {
-        return null;
+        return recyclingTipsRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Did not find tip id - " + id));
     }
 
-    @Transactional
     @Override
     public RecyclingTips saveTip(RecyclingTips recyclingTips) {
-        return null;
+        if (recyclingTips.getTitle() == null || recyclingTips.getTitle().trim().isEmpty()) {
+            throw new IllegalArgumentException("Tip title cannot be empty.");
+        }
+        try {
+            return recyclingTipsRepository.save(recyclingTips);
+        } catch (DataIntegrityViolationException e) {
+            throw new DataIntegrityViolationException("Tip title must be unique.");
+        }
     }
 
-    @Transactional
     @Override
     public void deleteTip(int id) {
-
+        if (!recyclingTipsRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Tip with ID " + id + " does not exist.");
+        }
+        recyclingTipsRepository.deleteById(id);
     }
 }
