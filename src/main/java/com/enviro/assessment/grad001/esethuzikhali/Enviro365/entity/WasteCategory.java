@@ -1,11 +1,11 @@
 package com.enviro.assessment.grad001.esethuzikhali.Enviro365.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 @Entity
 @Table(name = "waste_category")
-
-// Lombok annotations
 public class WasteCategory {
 
     @Id
@@ -13,13 +13,18 @@ public class WasteCategory {
     @Column(name = "id")
     private int id;
 
-    @Column(name = "category_name")
+    @NotNull
+    @Size(max = 100)
+    @Column(name = "category_name", unique = true, nullable = false, length = 100)
     private String categoryName;
 
-    @Column(name = "description")
+    @NotNull
+    @Size(max = 1000)
+    @Column(name = "description", nullable = false, length = 1000)
     private String description;
 
-    @Column(name = "common_examples")
+    @Size(max = 1000)
+    @Column(name = "common_examples", length = 1000)
     private String commonExamples;
 
 
@@ -63,9 +68,5 @@ public class WasteCategory {
 
     public void setCommonExamples(String commonExamples) {
         this.commonExamples = commonExamples;
-    }
-
-    public String toString() {
-        return "WasteCategory(id=" + this.getId() + ", categoryName=" + this.getCategoryName() + ", description=" + this.getDescription() + ", commonExamples=" + this.getCommonExamples() + ")";
     }
 }
